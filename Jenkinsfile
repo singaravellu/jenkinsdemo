@@ -9,6 +9,12 @@ pipeline {
   agent { label 'agent1' }
   
   stages {
+    
+    stage('git scm checkout') {
+      steps {
+         git branch: 'main', credentialsId: 'git', url: 'https://github.com/AnupKumar-ops/jenkinsdemo.git'
+      }
+   }
     stage('Pull Image') {
         steps {
             script { 
