@@ -6,7 +6,7 @@ pipeline {
     vendor_registryCredential = "docker"
     image_versiontag = "latest"
   }
-  agent { label 'agent1' }
+  agent any
   
   stages {
     
