@@ -41,7 +41,7 @@ pipeline {
     
     stage('start container') {
         steps {
-            sh "docker run -d --name myapp -p 8080:80 963287/myrepo:${tag}"
+            sh "docker run -d --name myapp -p 80:80 963287/myrepo:${tag}"
         }
     }
   }
