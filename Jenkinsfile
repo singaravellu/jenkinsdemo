@@ -1,28 +1,49 @@
 pipeline {
 
   environment {
-    vendor_registry = "hub.docker.com"
-    vendor_dockerImage = "nginx"
-    vendor_registryCredential = "docker"
-    image_versiontag = "latest"
+    registry = "hub.docker.com"
+    dockerImage = "nginx"
+    registryCredential = "docker"
+    tag = "nginxv1"
   }
-  agent any
+  agent { label 'agent1' }
   
   stages {
-    
     stage('git scm checkout') {
       steps {
          git branch: 'main', credentialsId: 'git', url: 'https://github.com/AnupKumar-ops/jenkinsdemo.git'
       }
-   }
-    stage('Pull Image') {
+    }
+    
+    stage('current') {
+      steps{
+        dir("${env.WORKSPACE}"){
+          sh "pwd"
+        }
+      }
+    }
+   
+    stage('Build image') {
+      steps{
+        sh "docker build -t 963287/myrepo:${tag} ."
+      }
+    }
+    
+    stage('push image') {
+      steps {
+        script {  
+          docker.withRegistry( '', registryCredential ) { 
+           sh "docker push 963287/myrepo:${tag}"
+          } 
+        }    
+      }    
+    }
+    
+    stage('start container') {
         steps {
-            script { 
-                docker.withRegistry( '', vendor_registryCredential ) {
-                }
-                sh "/usr/bin/docker pull $vendor_dockerImage:$image_versiontag"
-            }        
+            sh "docker run -d --name myapp -p 8080:80 963287/myrepo:${tag}"
         }
     }
   }
+  
 }
