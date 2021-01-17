@@ -25,6 +25,7 @@ pipeline {
    
     stage('Build image') {
       steps{
+        sh 'chmod 666 /var/run/docker.sock'
         sh "docker build -t 963287/myrepo:${tag} ."
       }
     }
