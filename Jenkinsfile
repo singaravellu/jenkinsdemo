@@ -25,7 +25,14 @@ pipeline {
               git credentialsId: "${SourceCredentials}", url: "${SourceRepo}"
            }
      }
-
+   
+     stage('checksum') {
+         steps {
+             script {
+                 fingerprint '**/*.war'
+             }
+         }
+     }
      stage('Upload to JFrog') { 
            steps {
              script {
