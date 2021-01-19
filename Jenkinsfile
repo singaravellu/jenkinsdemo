@@ -53,6 +53,7 @@ pipeline {
          steps {
              script {
                dockerImage = docker.build "${Registry}" + ":$BUILD_NUMBER"
+               sh 'sudo chmod 666 /var/run/docker.sock'
              }
          }
      }
