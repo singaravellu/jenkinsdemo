@@ -1,6 +1,6 @@
 def VendorName              = "Telco"
 def Product                 = "WarFiles"
-def Version                 = "vnf_v1.0"
+def Version                 = "vnf_v1.1"
 def ArtifactoryUrl          = "http://130.211.238.246:8082/artifactory"
 def ArtifactoryCredentials = "jfrogid"
 def App                     = "app2"
