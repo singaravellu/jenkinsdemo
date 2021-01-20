@@ -1,7 +1,14 @@
-@Library('github.com/AnupKumar-ops/poc')_
-
+def VendorName              = "Cisco"
+def Product                 = "WarFiles"
+def Version                 = "vnf_v1.1"
+def ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
+def ArtifactoryCredentials = "jfrogid"
+def App                     = "app2"
 def SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
-def SourceCredentials       = "github" 
+def SourceCredentials       = "github"       
+def Registry                = "docker.io/963287/myrepo"
+def RegistryCredential      = "docker"
+
  
 pipeline {
     
@@ -19,9 +26,7 @@ pipeline {
   stages {
      stage('SCM checkout') {
            steps {
-             script {
               git credentialsId: "${SourceCredentials}", url: "${SourceRepo}"
-             }
            }
      }
    
@@ -35,11 +40,6 @@ pipeline {
      stage('Upload to JFrog') { 
            steps {
              script {
-                def ArtifactoryUrl = data.ArtifactoryUrl()
-                def ArtifactoryCredentials = data.ArtifactoryCredentials()
-                def VendorName = data.VendorName()
-                def Product = data.Product()
-                def Version = data.Version()
                 def server = Artifactory.newServer url: "${ArtifactoryUrl}", credentialsId: "${ArtifactoryCredentials}"
                 def uploadSpec = """{
                                       "files": [
@@ -56,7 +56,7 @@ pipeline {
      stage('Build image') {
          steps {
                script {
-               dockerImage = docker.build data.Registry() + ":$BUILD_NUMBER"
+               dockerImage = docker.build "${Registry}" + ":$BUILD_NUMBER"
                
              }
          }
@@ -65,7 +65,7 @@ pipeline {
      stage('Push Image') {
          steps {
              script {
-                 docker.withRegistry( '', data.RegistryCredential() ) {
+                 docker.withRegistry( '', "${RegistryCredential}" ) {
                      dockerImage.push()
                  } 
              }
