@@ -1,4 +1,7 @@
 @Library('github.com/AnupKumar-ops/poc')_
+
+def SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
+def SourceCredentials       = "github" 
  
 pipeline {
     
@@ -17,7 +20,7 @@ pipeline {
      stage('SCM checkout') {
            steps {
              script {
-                git credentialsId: data.SourceCredentials(), url: data.SourceRepo()
+              git credentialsId: "${SourceCredentials}", url: "${SourceRepo}"
              }
            }
      }
