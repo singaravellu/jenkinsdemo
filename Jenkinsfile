@@ -1,4 +1,4 @@
-@Library('https://github.com/AnupKumar-ops/poc')_
+@Library('github.com/AnupKumar-ops/poc')_
 
 echoPipeline {
    VendorName              = "Cisco"
