@@ -35,12 +35,17 @@ pipeline {
      stage('Upload to JFrog') { 
            steps {
              script {
-                def server = Artifactory.newServer url: data.ArtifactoryUrl(), credentialsId: data.ArtifactoryCredentials()
+                def ArtifactoryUrl = data.ArtifactoryUrl()
+                def ArtifactoryCredentials = data.ArtifactoryCredentials()
+                def VendorName() = data.VendorName()
+                def Product = data.Product()
+                def Version = data.Version()
+                def server = Artifactory.newServer url: "${ArtifactoryUrl}", credentialsId: "${ArtifactoryCredentials}"
                 def uploadSpec = """{
                                       "files": [
                                           {
                                              "pattern": "${WORKSPACE}/*.war",
-                                             "target": "data.VendorName()/data.Product()/data.Version()/"
+                                             "target": "${VendorName}/${Product}/${Version}/"
                                           }
                                        ]
                                   }"""
