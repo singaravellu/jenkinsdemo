@@ -37,7 +37,7 @@ pipeline {
              script {
                 def ArtifactoryUrl = data.ArtifactoryUrl()
                 def ArtifactoryCredentials = data.ArtifactoryCredentials()
-                def VendorName() = data.VendorName()
+                def VendorName = data.VendorName()
                 def Product = data.Product()
                 def Version = data.Version()
                 def server = Artifactory.newServer url: "${ArtifactoryUrl}", credentialsId: "${ArtifactoryCredentials}"
