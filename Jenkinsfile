@@ -1,14 +1,4 @@
-def VendorName              = "Cisco"
-def Product                 = "WarFiles"
-def Version                 = "vnf_v1.1"
-def ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
-def ArtifactoryCredentials = "jfrogid"
-def App                     = "app2"
-def SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
-def SourceCredentials       = "github"       
-def Registry                = "docker.io/963287/myrepo"
-def RegistryCredential      = "docker"
-
+@Library('github.com/AnupKumar-ops/poc')_
  
 pipeline {
     
@@ -26,7 +16,7 @@ pipeline {
   stages {
      stage('SCM checkout') {
            steps {
-              git credentialsId: "${SourceCredentials}", url: "${SourceRepo}"
+              git credentialsId: data.SourceCredentials(), url: data.SourceRepo()
            }
      }
    
@@ -40,12 +30,12 @@ pipeline {
      stage('Upload to JFrog') { 
            steps {
              script {
-                def server = Artifactory.newServer url: "${ArtifactoryUrl}", credentialsId: "${ArtifactoryCredentials}"
+                def server = Artifactory.newServer url: data.ArtifactoryUrl(), credentialsId: data.ArtifactoryCredentials()
                 def uploadSpec = """{
                                       "files": [
                                           {
                                              "pattern": "${WORKSPACE}/*.war",
-                                             "target": "${VendorName}/${Product}/${Version}/"
+                                             "target": "data.VendorName()/data.Product()/data.Version()/"
                                           }
                                        ]
                                   }"""
@@ -56,7 +46,7 @@ pipeline {
      stage('Build image') {
          steps {
                script {
-               dockerImage = docker.build "${Registry}" + ":$BUILD_NUMBER"
+               dockerImage = docker.build data.Registry() + ":$BUILD_NUMBER"
                
              }
          }
@@ -65,7 +55,7 @@ pipeline {
      stage('Push Image') {
          steps {
              script {
-                 docker.withRegistry( '', "${RegistryCredential}" ) {
+                 docker.withRegistry( '', data.RegistryCredential() ) {
                      dockerImage.push()
                  } 
              }
