@@ -72,11 +72,6 @@ pipeline {
   }
  
    post { 
-        success { 
-            echo 'Build Pipeline OK'
-        }
-    }
-   post { 
         failure { 
             echo 'Build Pipeline OK'
         }
