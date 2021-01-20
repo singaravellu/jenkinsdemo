@@ -16,7 +16,9 @@ pipeline {
   stages {
      stage('SCM checkout') {
            steps {
-              git credentialsId: data.SourceCredentials(), url: data.SourceRepo()
+             script {
+                git credentialsId: data.SourceCredentials(), url: data.SourceRepo()
+             }
            }
      }
    
