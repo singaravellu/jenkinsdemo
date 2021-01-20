@@ -3,7 +3,7 @@
 echoPipeline {
    VendorName              = "Cisco"
    Product                 = "WarFiles"
-   Version                 = "vnf_v1.1"
+   Version                 = "vnf_v1.2"
    ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
    ArtifactoryCredentials = "jfrogid"
    App                     = "app2"
@@ -11,6 +11,7 @@ echoPipeline {
    SourceCredentials       = "github"       
    Registry                = "docker.io/963287/myrepo"
    RegistryCredential      = "docker"
+   WORKSPACE               = "${WORKSPACE}" 
 }
 
 
