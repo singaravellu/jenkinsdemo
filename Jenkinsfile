@@ -11,7 +11,6 @@ echoPipeline {
    SourceCredentials       = "github"       
    Registry                = "docker.io/963287/myrepo"
    RegistryCredential      = "docker"
-   WORKSPACE               = "${WORKSPACE}" 
 }
 
 
