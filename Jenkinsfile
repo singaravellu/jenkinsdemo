@@ -73,7 +73,7 @@ pipeline {
  
    post { 
         failure { 
-            echo 'Build Pipeline OK'
+            echo 'Build Pipeline NOK'
         }
     }
 }
