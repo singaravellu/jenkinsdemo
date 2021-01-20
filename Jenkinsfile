@@ -1,82 +1,16 @@
-def VendorName              = "Cisco"
-def Product                 = "WarFiles"
-def Version                 = "vnf_v1.1"
-def ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
-def ArtifactoryCredentials = "jfrogid"
-def App                     = "app2"
-def SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
-def SourceCredentials       = "github"       
-def Registry                = "docker.io/963287/myrepo"
-def RegistryCredential      = "docker"
+@Library('https://github.com/AnupKumar-ops/poc')_
 
- 
-pipeline {
-    
-    environment {
-        DockerImage = ""
-    }
-    
-   
-  agent any
- 
-  triggers { 
-     githubPush()
-  }
-
-  stages {
-     stage('SCM checkout') {
-           steps {
-              git credentialsId: "${SourceCredentials}", url: "${SourceRepo}"
-           }
-     }
-   
-     stage('checksum') {
-         steps {
-             script {
-                 fingerprint '**/*.war'
-             }
-         }
-     }
-     stage('Upload to JFrog') { 
-           steps {
-             script {
-                def server = Artifactory.newServer url: "${ArtifactoryUrl}", credentialsId: "${ArtifactoryCredentials}"
-                def uploadSpec = """{
-                                      "files": [
-                                          {
-                                             "pattern": "${WORKSPACE}/*.war",
-                                             "target": "${VendorName}/${Product}/${Version}/"
-                                          }
-                                       ]
-                                  }"""
-                server.upload spec: uploadSpec
-              }
-            }
-     }
-     stage('Build image') {
-         steps {
-               script {
-               dockerImage = docker.build "${Registry}" + ":$BUILD_NUMBER"
-               
-             }
-         }
-     }
-     
-     stage('Push Image') {
-         steps {
-             script {
-                 docker.withRegistry( '', "${RegistryCredential}" ) {
-                     dockerImage.push()
-                 } 
-             }
-         }           
-     }
-
-  }
- 
-   post { 
-        failure { 
-            echo 'Build Pipeline NOK'
-        }
-    }
+echoPipeline {
+   VendorName              = "Cisco"
+   Product                 = "WarFiles"
+   Version                 = "vnf_v1.1"
+   ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
+   ArtifactoryCredentials = "jfrogid"
+   App                     = "app2"
+   SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
+   SourceCredentials       = "github"       
+   Registry                = "docker.io/963287/myrepo"
+   RegistryCredential      = "docker"
 }
+
+
