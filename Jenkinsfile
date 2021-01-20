@@ -1,7 +1,7 @@
 def VendorName              = "Telco"
 def Product                 = "WarFiles"
 def Version                 = "vnf_v1.1"
-def ArtifactoryUrl          = "http://130.211.238.246:8082/artifactory"
+def ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
 def ArtifactoryCredentials = "jfrogid"
 def App                     = "app2"
 def SourceRepo              = "https://github.com/AnupKumar-ops/jenkinsdemo"
@@ -18,7 +18,10 @@ pipeline {
     
    
   agent any
-  triggers { pollSCM '*/2 * * * *' }
+ 
+  triggers { 
+     githubPush()
+  }
 
   stages {
      stage('SCM checkout') {
