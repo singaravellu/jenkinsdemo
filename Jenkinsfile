@@ -70,5 +70,11 @@ pipeline {
      }
 
   }
+ 
+   post { 
+        success { 
+            echo 'Build Pipeline OK'
+        }
+    }
   
 }
