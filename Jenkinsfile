@@ -3,7 +3,7 @@
 echoPipeline {
    VendorName              = "Cisco"
    Product                 = "WarFiles"
-   Version                 = "vnf_v1.2"
+   Version                 = "vnf_v1.3"
    ArtifactoryUrl          = "http://34.71.26.245:8082/artifactory"
    ArtifactoryCredentials = "jfrogid"
    App                     = "app2"
