@@ -18,7 +18,7 @@ def SourceDockerImage            = "nginx"
 def image_version                = "latest"
 def user_image_checksum          = "10b8cc432d56da8b61b070f4c7d2543a9ed17c2b23010b43af434fd40e2ca4aa"
 def userInput = input(
-            id: 'userInput', message: 'Enter credentials:?',
+            id: 'userInput', message: 'Enter Artifactory credentials:?',
                 parameters: [
 
                     string(defaultValue: 'admin',
@@ -95,7 +95,7 @@ pipeline {
                         curl -O "$SOURCE_PATH/$file"
                       done
                   }
-                  if [ -d "$WORKSPACE/artifacts" ]
+                  if [ -d "$WORKSPACE/artifacts" ]; then
                         get 
                   else
                        mkdir $WORKSPACE/artifacts
