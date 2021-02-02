@@ -186,7 +186,7 @@ pipeline {
                                cpu=$(expr $sum1 + $cpu)
                                memory=$(expr $sum2 + $memory)
                           done
-                          cpu=$(expr $cpu \* 1000)
+                          cpu=$(echo | awk -v CPU="$cpu" '{ print CPU*1000 }')
                           echo "TOTAL CPU : ${cpu}m"
                           echo "TOTAL MEM : ${memory}Ki"
                           echo "##########################################################"
