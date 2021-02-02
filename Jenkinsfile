@@ -94,14 +94,13 @@ pipeline {
                       do
                         curl -O "$SOURCE_PATH/$file"
                       done
-                  }    
-                  val=`mkdir $WORKSPACE/artifacts`
-                  if [ $? -eq 0 ]: then
-                       get 
+                  }
+                  if [ -d "$WORKSPACE/artifacts" ]
+                        get 
                   else
+                       mkdir $WORKSPACE/artifacts
                        get
                   fi 
-                  
                 '''
             }
         }
