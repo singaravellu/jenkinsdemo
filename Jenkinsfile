@@ -174,7 +174,7 @@ pipeline {
                                                                        name: 'replicas'),
                                                     ]
                                )
-                               inputReplicas =  userInput3.replicas?:''
+                               replicas =  userInput3.replicas?:''
                         // check resource availablity
                                 
                        sh '''
@@ -201,7 +201,7 @@ pipeline {
                           cpu_request_hardlimit=$(echo "scale=2; $value / $replicas" | bc)
                           echo "cpu_request_hardlimit:${cpu_request_hardlimit}m
                         }
-                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $inputREPLICAS"
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $replicas"
                       '''  
                       }
                   }       
@@ -233,13 +233,22 @@ pipeline {
                                                                                          description: 'replica count',
                                                                                          name: 'replicas'),
                                                            ]
-                              ) 
+                              )
+                              def userInput5 = input(
+                                  id: 'userInput5', message: 'Enter K8s Resource details:?',
+                                                          parameters: [
+                                                                 string(defaultValue: '2',
+                                                                                         description: 'replica count',
+                                                                                         name: 'replicas'),
+                                                          ]
+                              )
+                             
                                       kube_namespace = userInput4.k8_namespace?:''
                                       limits_cpu     = userInput4.cpu_limits?:''
                                       limits_memory  = userInput4.memory_limits?:''
                                       req_cpu        = userInput4.cpu_requests?:''
                                       req_memory     = userInput4.memory_requests?:''
-                                      replicas       = userInput4.replicas?:''
+                                      replicas       = userInput5.replicas?:''
                                       sh '''
                                          getinputs() {
                                             var=`kubectl create namespace $1`
