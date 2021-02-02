@@ -227,15 +227,15 @@ pipeline {
                                                                                          description: 'MEMORY REQUESTS',
                                                                                          name: 'memory_requests'),
                                                                          string(defaultValue: 'app-nginx',
-                                                                                         description: 'k8 namespace',
+                                                                                         description: 'k8 namespace'),
                                                           ]
                               )
                               def userInput5 = input(
                                   id: 'userInput5', message: 'Enter K8s Resource details:?',
                                                           parameters: [
                                                                  string(defaultValue: '2',
-                                                                                         description: 'replica count',
-                                                                                         name: 'replicas'),
+                                                                                   description: 'replica count',
+                                                                                    name: 'replicas'),
                                                           ]
                               )
                              
