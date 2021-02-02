@@ -165,7 +165,7 @@ pipeline {
         stage('Check Resource availablity in K8') {
                   steps {
                          script {
-                               def replicas 
+                               def replicasCount 
                                def userInput3 = input(
                                   id: 'userInput3', message: 'Enter K8s Resource details:?',
                                                parameters: [ 
@@ -174,7 +174,7 @@ pipeline {
                                                                        name: 'replicas'),
                                                     ]
                                )
-                               replicas =  userInput3.replicas?:''
+                               replicasCount =  userInput3.replicas?:''
                         // check resource availablity
                                 
                        sh '''
@@ -201,7 +201,7 @@ pipeline {
                           cpu_request_hardlimit=$(echo "scale=2; $value / $replicas" | bc)
                           echo "cpu_request_hardlimit:${cpu_request_hardlimit}m
                         }
-                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $replicas"
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $replicasCount"
                       '''  
                       }
                   }       
