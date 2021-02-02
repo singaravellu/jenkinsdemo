@@ -102,9 +102,9 @@ pipeline {
     
     agent any
        
-    triggers { 
-     githubPush()
-  }   
+    //triggers { 
+     //githubPush()
+  //}   
  
     stages {
         
@@ -117,7 +117,9 @@ pipeline {
         stage('download vendor artifacts') {
             steps {
                 sh '''
-                  rm -rf $WORKSPACE/*.war
+                  mkdir $WORKSPACE/artifacts
+                  rm -rf $WORKSPACE/artifacts/*
+                  cd $WORKSPACE/artifacts
                   for file in $FILE_LISTS
                   do
                     curl -O "$SOURCE_PATH/$file"
@@ -131,7 +133,7 @@ pipeline {
             steps {
                 withSecretEnv([[var: 'USER_NAME', password: "${env.ARTFT_USER}"], [var: 'ARTF_TOKEN', password: "${env.ARTFT_TOKEN}"]]) {
                 sh '''
-                          for file in `ls $WORKSPACE`
+                          for file in `ls $WORKSPACE/artifacts`
                           do
                            ARTIFACT_MD5_CHECKSUM=$(md5sum $file | awk '{print $1}')
                            ARTIFACT_SHA1_CHECKSUM=$(sha1sum  $file | awk '{ print $1 }')
