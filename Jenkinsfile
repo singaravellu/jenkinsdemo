@@ -235,7 +235,7 @@ pipeline {
                                                           parameters: [
                                                                  string(defaultValue: '2',
                                                                                    description: 'replica count',
-                                                                                    name: 'replicas'),
+                                                                                    name: 'replicasval'),
                                                           ]
                               )
                              
@@ -244,7 +244,7 @@ pipeline {
                                       limits_memory  = userInput4.memory_limits?:''
                                       req_cpu        = userInput4.cpu_requests?:''
                                       req_memory     = userInput4.memory_requests?:''
-                                      replicas       = userInput5.replicas?:''
+                                      replicasvalue       = userInput5.replicasval?:''
                                       sh '''
                                          getinputs() {
                                             var=`kubectl create namespace $1`
@@ -259,7 +259,7 @@ pipeline {
                                          rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
                                          ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
                                          $kube_namespace $limits_cpu $limits_memory \
-                                         $req_cpu $req_memory $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $replicas"
+                                         $req_cpu $req_memory $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $replicasvalue"
                                     '''
                      }
                       
