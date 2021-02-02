@@ -160,10 +160,10 @@ pipeline {
                          script {
                                def userInput3 = input(
                                   id: 'userInput3', message: 'Enter K8s Resource details:?',
-                                                    parameters: [ 
-                                                              string(defaultValue: '2',
-                                                                          description: 'replica count',
-                                                                           name: 'replicas'),
+                                               parameters: [ 
+                                                         string(defaultValue: '2',
+                                                                       description: 'replica count',
+                                                                       name: 'replicas'),
                                                     ]
                                )
                          }
@@ -172,7 +172,7 @@ pipeline {
         
         stage('get Resource availablity in K8'){
                 environment {
-                      REPLICAS =  = "${userInput3.replicas?:''}"
+                      REPLICAS = "${userInput3.replicas?:''}"
                 }       
                steps {
                     sh '''
