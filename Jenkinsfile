@@ -144,7 +144,6 @@ pipeline {
                           do
                            ARTIFACT_MD5_CHECKSUM=$(md5sum $file | awk '{print $1}')
                            ARTIFACT_SHA1_CHECKSUM=$(sha1sum  $file | awk '{ print $1 }')
-                           echo "VNF Artifacts detected"
                            response=$(curl -s -o /dev/null -w "%{http_code}" \
                            -u "$USER_NAME":"$ARTF_TOKEN" \
                            --connect-timeout 7 -i -X PUT  \
