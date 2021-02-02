@@ -48,30 +48,6 @@ def userInput2 = input(
                                             name: 'Source_registry_password'), 
                 ]
 )
-def userInput3 = input(
-            id: 'userInput2', message: 'Enter K8s Resource details:?',
-                parameters: [
-        
-                        string(defaultValue: '1',
-                                            description: 'CPU LIMITS',
-                                            name: 'cpu_limits'),                        
-                        string(defaultValue: '1Gi',
-                                            description: 'MEMORY LIMITS',
-                                            name: 'memory_limits'), 
-                        string(defaultValue: '500m',
-                                            description: 'CPU REQUESTS',
-                                            name: 'cpu_requests'),
-                        string(defaultValue: '500Mi',
-                                            description: 'MEMORY REQUESTS',
-                                            name: 'memory_requests'),
-                        string(defaultValue: 'app-nginx',
-                                            description: 'k8 namespace',
-                                            name: 'k8_namespace'),
-                        string(defaultValue: '2',
-                                            description: 'replica count',
-                                            name: 'replicas'),                        
-                ]
-)                            
 pipeline {
     
     environment {
@@ -91,20 +67,14 @@ pipeline {
         SOURCE_PATH        = "${userInput.Source_Repository?:''}"
         FILE_LISTS         = "${userInput.Source_file_lists?:''}"
         SOURCE_REG_USER    = "${userInput2.Source_registry_user?:''}"
-        SOURCE_REG_TOKEN   = "${userInput2.Source_registry_password?:''}"
-        KUBE_NAMESPACE          = "${userInput3.k8_namespace?:''}"
-        LIMITS_CPU           = "${userInput3.cpu_limits?:''}"
-        LIMITS_MEMORY        = "${userInput3.memory_limits?:''}"
-        REQ_CPU           = "${userInput3.cpu_requests?:''}"
-        REQ_MEMORY           = "${userInput3.memory_requests?:''}"
-        REPLICAS           = "${userInput3.replicas?:''}"
+        SOURCE_REG_TOKEN   = "${userInput2.Source_registry_password?:''}"         
     }
     
     agent any
        
-    //triggers { 
-     //githubPush()
-  //}   
+    triggers { 
+      githubPush()
+    }   
  
     stages {
         
@@ -185,8 +155,88 @@ pipeline {
                 }    
             }
         }
+        stage('Get Replicas') {
+                  steps {
+                         script {
+                               def userInput3 = input(
+                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
+                                                    parameters: [ 
+                                                              string(defaultValue: '2',
+                                                                          description: 'replica count',
+                                                                           name: 'replicas'),
+                                                    ]
+                               )
+                         }
+                  }       
+         }                                                        
+        
+        stage('get Resource availablity in K8'){
+                environment {
+                      REPLICAS =  = "${userInput3.replicas?:''}"
+                }       
+               steps {
+                    sh '''
+                       check() {
+                          cpu=0
+                          memory=0
+                          for node in $(kubectl get nodes | grep -v NAME| awk '{print $1}' | awk '(NR>1)')
+                          do      
+                               sum1=$(kubectl describe nodes $node | grep cpu | awk -F " " '{print $2}'| head -1)
+                               sum2=$(kubectl describe nodes $node | grep "memory:" | awk -F " " '{print $2}'| head -1 | awk -F "K" '{print $1}')
+                               cpu=$(expr $sum1 + $cpu)
+                               memory=$(expr $sum2 + $memory)
+                          done
+                          cpu=$(expr $cpu \* 1000)
+                          echo "TOTAL CPU : ${cpu}m"
+                          echo "TOTAL MEM : ${memory}Ki"
+                          echo "##########################################################"
+                          echo "Applied Requests and Limits"
+                          kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
+                          -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'
+
+                          echo "########################"
+                          value=$(echo | awk -v CPU="$cpu" '{ print CPU*0.85 }')
+                          replicas=$1
+                          cpu_request_hardlimit=$(echo "scale=2; $value / $replicas" | bc)
+                          echo "cpu_request_hardlimit:${cpu_request_hardlimit}m
+                        }
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS"
+                      '''  
+                      script {
+                              def userInput4 = input(
+                                  id: 'userInput4', message: 'Enter K8s Resource details:?',
+                                                          parameters: [
+        
+                                                                         string(defaultValue: '1',
+                                                                                         description: 'CPU LIMITS',
+                                                                                         name: 'cpu_limits'),                        
+                                                                         string(defaultValue: '1Gi',
+                                                                                         description: 'MEMORY LIMITS',
+                                                                                         name: 'memory_limits'), 
+                                                                         string(defaultValue: '500m',
+                                                                                         description: 'CPU REQUESTS',
+                                                                                         name: 'cpu_requests'),
+                                                                         string(defaultValue: '500Mi',
+                                                                                         description: 'MEMORY REQUESTS',
+                                                                                         name: 'memory_requests'),
+                                                                         string(defaultValue: 'app-nginx',
+                                                                                         description: 'k8 namespace',
+                                                                                         name: 'k8_namespace')
+                                                           ]
+                              )                            
+                      }
+               }       
+        }                 
         
         stage('Deploy') {
+            environment {
+                  KUBE_NAMESPACE = "${userInput4.k8_namespace?:''}"
+                  LIMITS_CPU     = "${userInput4.cpu_limits?:''}"
+                  LIMITS_MEMORY  = "${userInput4.memory_limits?:''}"
+                  REQ_CPU        = "${userInput4.cpu_requests?:''}"
+                  REQ_MEMORY     = "${userInput4.memory_requests?:''}"
+                  REPLICAS       = "${userInput3.replicas?:''}" 
+            }       
             steps {
                 sh '''
                      getinputs() {
