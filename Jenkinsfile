@@ -174,6 +174,7 @@ pipeline {
                                                     ]
                                )
                                replicasCount =  userInput3.replicas?:''
+                         }      
                         // check resource availablity
                                 
                        sh '''
@@ -201,7 +202,6 @@ pipeline {
                         }
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $replicasCount"
                       '''  
-                      }
                   }       
          }                                                        
         
