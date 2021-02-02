@@ -7,7 +7,7 @@ def withSecretEnv(List<Map> varAndPasswordList, Closure closure) {
 }
 
 def SourceGitRepo                = "https://github.com/AnupKumar-ops/jenkinsdemo"
-def VendorName                   = "Cisco"
+def VendorName                   = "Telco"
 def Product                      = "VNF"
 def Version                      = "1.0"
 def upload_filepath              = "http://104.197.48.153:8082/artifactory/${VendorName}/${Product}/${Version}"
