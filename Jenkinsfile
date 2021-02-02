@@ -87,13 +87,21 @@ pipeline {
         stage('download vendor artifacts') {
             steps {
                 sh '''
-                  mkdir $WORKSPACE/artifacts
-                  rm -rf $WORKSPACE/artifacts/*
-                  cd $WORKSPACE/artifacts
-                  for file in $FILE_LISTS
-                  do
-                    curl -O "$SOURCE_PATH/$file"
-                  done    
+                  get() {
+                      rm -rf $WORKSPACE/artifacts/*
+                      cd $WORKSPACE/artifacts
+                      for file in $FILE_LISTS
+                      do
+                        curl -O "$SOURCE_PATH/$file"
+                      done
+                  }    
+                  val=`mkdir $WORKSPACE/artifacts`
+                  if [ $? -eq 0 ]: then
+                       get 
+                  else
+                       get
+                  fi 
+                  
                 '''
             }
         }
