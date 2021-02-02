@@ -117,11 +117,20 @@ pipeline {
         stage('download vendor artifacts') {
             steps {
                 sh '''
-                  rm -rf $WORKSPACE/*.war
-                  for file in $FILE_LISTS
-                  do
-                    curl -O "$SOURCE_PATH/$file"
-                  done    
+                  get() {
+                      rm -rf $WORKSPACE/artifacts/*
+                      cd $WORKSPACE/artifacts
+                      for file in $FILE_LISTS
+                      do
+                        curl -O "$SOURCE_PATH/$file"
+                      done
+                  }
+                  if [ -d "$WORKSPACE/artifacts" ]; then
+                        get 
+                  else
+                       mkdir $WORKSPACE/artifacts
+                       get
+                  fi 
                 '''
             }
         }
