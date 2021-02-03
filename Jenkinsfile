@@ -197,7 +197,7 @@ pipeline {
                           echo "########################"
                           value=$(echo | awk -v CPU="$cpu" '{ print CPU*0.85 }')
                           cpu_request_hardlimit=$(echo "scale=2; $value / $1" | bc)
-                          echo 'cpu_request_hardlimit:"$cpu_request_hardlimit"m'
+                          echo "cpu_request_hardlimit:${cpu_request_hardlimit}m"
                         }
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS_COUNT"
                       '''  
@@ -224,15 +224,15 @@ pipeline {
                                                                                          description: 'MEMORY REQUESTS',
                                                                                          name: 'memory_requests'),
                                                                          string(defaultValue: 'app-nginx',
-                                                                                         description: 'k8 namespace'),
+                                                                                         description: 'k8_namespace'),
                                                           ]
                               )
                               def userInput5 = input(
                                   id: 'userInput5', message: 'Enter K8s Resource details:?',
                                                           parameters: [
                                                                  string(defaultValue: '2',
-                                                                                   description: 'replica count',
-                                                                                    name: 'replicasval'),
+                                                                               description: 'replica count',
+                                                                               name: 'replicasval'),
                                                           ]
                               )
                               KUBE_NAMESPACE = userInput4.k8_namespace?:''
