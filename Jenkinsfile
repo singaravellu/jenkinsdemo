@@ -244,7 +244,7 @@ pipeline {
                                    fi
                              }
                              rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
-                             ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs $KUBE_NMESPACE $LIMITS_CPU $LIMITS_MEMORY \
+                             ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs $KUBE_NAMESPACE $LIMITS_CPU $LIMITS_MEMORY \
                              $REQ_CPU $REQ_MEM $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS_VALUE"
                       '''
             }       
