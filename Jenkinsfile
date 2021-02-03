@@ -195,8 +195,9 @@ pipeline {
                           kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
                           -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'
                           echo "########################"
+                          replicas="$1"
                           value=$(echo | awk -v CPU="$cpu" '{ print CPU*0.85 }')
-                          cpu_request_hardlimit=$(echo "scale=2; $value / $1" | bc)
+                          cpu_request_hardlimit=$(echo "scale=2; $value / $replicas" | bc)
                           echo "cpu_request_hardlimit:${cpu_request_hardlimit}m"
                         }
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS_COUNT"
