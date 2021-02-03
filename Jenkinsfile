@@ -164,7 +164,6 @@ pipeline {
         stage('Check Resource availablity in K8') {
                   steps {
                          script {
-                               def replicasCount 
                                def userInput3 = input(
                                   id: 'userInput3', message: 'Enter K8s Resource details:?',
                                                parameters: [ 
@@ -173,7 +172,7 @@ pipeline {
                                                                        name: 'replicas'),
                                                     ]
                                )
-                               replicasCount =  userInput3.replicas?:''
+                               REPLICAS_COUNT =  "$userInput3"
                          }      
                         // check resource availablity
                                 
@@ -200,7 +199,7 @@ pipeline {
                           cpu_request_hardlimit=$(echo "scale=2; $value / $1" | bc)
                           echo "cpu_request_hardlimit:${cpu_request_hardlimit}m
                         }
-                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $replicasCount"
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS_COUNT"
                       '''  
                   }       
          }                                                        
@@ -236,35 +235,35 @@ pipeline {
                                                                                     name: 'replicasval'),
                                                           ]
                               )
-                             
-                                      kube_namespace = userInput4.k8_namespace?:''
-                                      limits_cpu     = userInput4.cpu_limits?:''
-                                      limits_memory  = userInput4.memory_limits?:''
-                                      req_cpu        = userInput4.cpu_requests?:''
-                                      req_memory     = userInput4.memory_requests?:''
-                                      replicasvalue       = userInput5.replicasval?:''
-                                      sh '''
-                                         getinputs() {
-                                            var=`kubectl create namespace $1`
-                                            if [ $? -eq 1 ]; then
-                                               echo "$1 namespace already created. Choose other name"
-                                               exit 1
-                                            else
-                                               kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
-                                               helm install app1 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
-                                            fi
-                                         }
-                                         rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
-                                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
-                                         $kube_namespace $limits_cpu $limits_memory \
-                                         $req_cpu $req_memory $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $replicasvalue"
-                                    '''
-                     }
+                              KUBE_NAMESPACE = userInput4.k8_namespace?:''
+                              LIMITS_CPU     = userInput4.cpu_limits?:''
+                              LIMITS_MEMORY  = userInput4.memory_limits?:''
+                              REQ_CPU        = userInput4.cpu_requests?:''
+                              REQ_MEMORY     = userInput4.memory_requests?:''
+                              REPLICAS_VALUE       = userInput5.replicasval?:''
+                      }
                       
-              }       
+                      // deploy to K8
+                      sh '''
+                            getinputs() {
+                                   var=`kubectl create namespace $1`
+                                   if [ $? -eq 1 ]; then
+                                        echo "$1 namespace already created. Choose other name"
+                                        exit 1
+                                   else
+                                        kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
+                                        helm install app1 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
+                                   fi
+                             }
+                             rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
+                             ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
+                             $KUBE_NMESPACE $LIMITS_CPU $LIMITS_MEMORY \
+                             $REQ_CPU $REQ_MEM $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS_VALUE"
+                      '''
+            }       
         }                 
            
-    }
+   }
 }
 
 
