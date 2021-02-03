@@ -162,7 +162,7 @@ pipeline {
             }
         }
         stage('Check Resource availablity in K8') {
-                  
+               steps {
                         // check resource availablity
                                 
                        sh '''
@@ -193,8 +193,8 @@ pipeline {
         stage('Deploy to K8 cluster'){
                steps {
                       script {
-                              def userInput4 = input(
-                                  id: 'userInput4', message: 'Enter K8s Resource details:?',
+                              def userInput3 = input(
+                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
                                                           parameters: [
         
                                                                          string(defaultValue: '1',
@@ -213,20 +213,20 @@ pipeline {
                                                                                          description: 'k8_namespace'),
                                                           ]
                               )
-                              def userInput5 = input(
-                                  id: 'userInput5', message: 'Enter K8s Resource details:?',
+                              def userInput4 = input(
+                                  id: 'userInput4', message: 'Enter K8s Resource details:?',
                                                           parameters: [
                                                                  string(defaultValue: '2',
                                                                                description: 'replica count',
                                                                                name: 'replicasval'),
                                                           ]
                               )
-                              KUBE_NAMESPACE = userInput4.k8_namespace?:''
-                              LIMITS_CPU     = userInput4.cpu_limits?:''
-                              LIMITS_MEMORY  = userInput4.memory_limits?:''
-                              REQ_CPU        = userInput4.cpu_requests?:''
-                              REQ_MEMORY     = userInput4.memory_requests?:''
-                              REPLICAS_VALUE       = userInput5.replicasval?:''
+                              KUBE_NAMESPACE = userInput3.k8_namespace?:''
+                              LIMITS_CPU     = userInput3.cpu_limits?:''
+                              LIMITS_MEMORY  = userInput3.memory_limits?:''
+                              REQ_CPU        = userInput3.cpu_requests?:''
+                              REQ_MEMORY     = userInput3.memory_requests?:''
+                              REPLICAS_VALUE       = userInput4.replicasval?:''
                       }
                       
                       // deploy to K8
