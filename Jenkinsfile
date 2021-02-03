@@ -210,9 +210,9 @@ pipeline {
                                                                                          description: 'MEMORY REQUESTS',
                                                                                          name: 'memory_requests'),
                                                                          string(defaultValue: 'app-nginx',
-                                                                                         description: 'k8 namespace'),
-                                                                                         name: 'k8_namespace' 
-                                                          ]
+                                                                                         description: 'k8 namespace',
+                                                                                         name: 'k8_namespace'), 
+                                                        ]
                               )
                               def userInput4 = input(
                                   id: 'userInput4', message: 'Enter K8s Resource details:?',
