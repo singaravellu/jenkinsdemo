@@ -110,6 +110,7 @@ pipeline {
             steps {
                 withSecretEnv([[var: 'USER_NAME', password: "${env.ARTFT_USER}"], [var: 'ARTF_TOKEN', password: "${env.ARTFT_TOKEN}"]]) {
                 sh '''
+                          cd $WORKSPACE/artifacts
                           for file in `ls $WORKSPACE/artifacts`
                           do
                            ARTIFACT_MD5_CHECKSUM=$(md5sum $file | awk '{print $1}')
