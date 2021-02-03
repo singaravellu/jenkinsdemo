@@ -197,7 +197,7 @@ pipeline {
                           echo "########################"
                           value=$(echo | awk -v CPU="$cpu" '{ print CPU*0.85 }')
                           cpu_request_hardlimit=$(echo "scale=2; $value / $1" | bc)
-                          echo "cpu_request_hardlimit:${cpu_request_hardlimit}m"
+                          echo 'cpu_request_hardlimit:"$cpu_request_hardlimit"m'
                         }
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS_COUNT"
                       '''  
