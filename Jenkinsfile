@@ -119,7 +119,7 @@ pipeline {
                            --connect-timeout 7 -i -X PUT  \
                            -H "X-Checksum-MD5:${ARTIFACT_MD5_CHECKSUM}" \
                            -H "X-Checksum-Sha1:${ARTIFACT_SHA1_CHECKSUM}" \
-                           -T "$WORKSPACE"/"$file" \
+                           -T "$WORKSPACE"/artifacts/"$file" \
                            "$UPLOAD_FILEPATH/$file")
                             if [[ $response -eq 200 ]] ||  [[ $response -eq 201  ]]; then
                               echo "Checksum validation passed. Files Uploaded"
