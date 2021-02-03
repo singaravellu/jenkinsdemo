@@ -162,18 +162,7 @@ pipeline {
             }
         }
         stage('Check Resource availablity in K8') {
-                  steps {
-                         script {
-                               def userInput3 = input(
-                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
-                                               parameters: [ 
-                                                         string(defaultValue: '2',
-                                                                       description: 'replica count',
-                                                                       name: 'replicas'),
-                                                    ]
-                               )
-                               REPLICAS_COUNT =  "$userInput3"
-                         }      
+                  
                         // check resource availablity
                                 
                        sh '''
@@ -194,13 +183,9 @@ pipeline {
                           echo "Applied Requests and Limits"
                           kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
                           -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'
-                          echo "########################"
-                          replicas="$1"
-                          value=$(echo | awk -v CPU="$cpu" '{ print CPU*0.85 }')
-                          cpu_request_hardlimit=$(echo "scale=2; $value / $replicas" | bc)
-                          echo "cpu_request_hardlimit:${cpu_request_hardlimit}m"
+                         
                         }
-                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS_COUNT"
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check "
                       '''  
                   }       
          }                                                        
