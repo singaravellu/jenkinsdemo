@@ -190,11 +190,11 @@ pipeline {
                   }       
          }                                                        
         
-        stage('Deploy to K8 cluster'){
+        stage('get input'){
                steps {
                       script {
                               def userInput3 = input(
-                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
+                                     id: 'userInput3', message: 'Enter K8s Resource details:?',
                                                           parameters: [
         
                                                                          string(defaultValue: '1',
@@ -212,8 +212,8 @@ pipeline {
                                                                          string(defaultValue: 'app-nginx',
                                                                                          description: 'k8 namespace',
                                                                                          name: 'k8_namespace'), 
-                                                        ]
-                              )
+                                                         ]
+                                    )
                               def userInput4 = input(
                                   id: 'userInput4', message: 'Enter K8s Resource details:?',
                                                           parameters: [
@@ -222,16 +222,22 @@ pipeline {
                                                                                name: 'replicasval'),
                                                           ]
                               )
-                              KUBE_NAMESPACE = userInput3.k8_namespace?:''
-                              LIMITS_CPU     = userInput3.cpu_limits?:''
-                              LIMITS_MEMORY  = userInput3.memory_limits?:''
-                              REQ_CPU        = userInput3.cpu_requests?:''
-                              REQ_MEMORY     = userInput3.memory_requests?:''
-                              REPLICAS       = "$userInput4"
+                              
                       }
-                      
-                      // deploy to K8
-                      sh '''
+               }
+        }       
+         
+        stage('deploy to k8') {
+             environment {
+                  KUBE_NAMESPACE = userInput3.k8_namespace?:''
+                  LIMITS_CPU     = userInput3.cpu_limits?:''
+                  LIMITS_MEMORY  = userInput3.memory_limits?:''
+                  REQ_CPU        = userInput3.cpu_requests?:''
+                  REQ_MEMORY     = userInput3.memory_requests?:''
+                  REPLICAS       = "$userInput4"
+             }       
+               steps {      
+                     sh '''
                             getinputs() {
                                  var=`kubectl create namespace $1`
                                  if [ $? -eq 1 ]; then
@@ -246,7 +252,7 @@ pipeline {
                             ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
                             $KUBE_NAMESPACE $LIMITS_CPU $LIMITS_MEMORY \
                             $REQ_CPU $REQ_MEMORY $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS"
-                      '''
+                   '''
             }       
         }                 
            
