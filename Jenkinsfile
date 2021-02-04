@@ -229,12 +229,12 @@ pipeline {
          
         stage('deploy to k8') {
              environment {
-                  KUBE_NAMESPACE = userInput3.k8_namespace?:''
-                  LIMITS_CPU     = userInput3.cpu_limits?:''
-                  LIMITS_MEMORY  = userInput3.memory_limits?:''
-                  REQ_CPU        = userInput3.cpu_requests?:''
-                  REQ_MEMORY     = userInput3.memory_requests?:''
-                  REPLICAS       = "$userInput4"
+                    KUBE_NAMESPACE = "{userInput3.k8_namespace?:''}"
+                    LIMITS_CPU     = "{userInput3.cpu_limits?:''}"
+                    LIMITS_MEMORY  = "{userInput3.memory_limits?:''}"
+                    REQ_CPU        = "{userInput3.cpu_requests?:''}"
+                    REQ_MEMORY     = "{userInput3.memory_requests?:''}"
+                    REPLICAS       = "{$userInput4}"
              }       
                steps {      
                      sh '''
