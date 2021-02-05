@@ -222,7 +222,12 @@ pipeline {
                                                                                name: 'replicasval'),
                                                           ]
                               )
-                             
+                              KUBE_NAMESPACE = "${userInput3.k8_namespace?:''}"
+                              LIMITS_CPU     = "${userInput3.cpu_limits?:''}"
+                              LIMITS_MEMORY  = "${userInput3.memory_limits?:''}"
+                              REQ_CPU        = "${userInput3.cpu_requests?:''}"
+                              REQ_MEMORY     = "${userInput3.memory_requests?:''}"
+                              REPLICAS       = "${userInput4}"
                               
                       }
                }
@@ -230,12 +235,12 @@ pipeline {
          
         stage('deploy to k8') {
              environment {
-                    KUBE_NAMESPACE = "${userInput3.k8_namespace?:''}"
-                    LIMITS_CPU     = "${userInput3.cpu_limits?:''}"
-                    LIMITS_MEMORY  = "${userInput3.memory_limits?:''}"
-                    REQ_CPU        = "${userInput3.cpu_requests?:''}"
-                    REQ_MEMORY     = "${userInput3.memory_requests?:''}"
-                    REPLICAS       = "${userInput4}"
+                    KUBE_NAMESPACE = "${KUBE_NAMESPACE}"
+                    LIMITS_CPU     = "${LIMITS_CPU}"
+                    LIMITS_MEMORY  = "${LIMITS_MEMORY}"
+                    REQ_CPU        = "${REQ_CPU}"
+                    REQ_MEMORY     = "${REQ_MEMORY}"
+                    REPLICAS       = "${REPLICAS}"
              }       
                steps {      
                      sh '''
