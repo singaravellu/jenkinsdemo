@@ -16,7 +16,7 @@ def TargetRegistry               = "docker.io/963287/myrepo"
 def TargetRegistryUbuntu         = "963287/myrepo" 
 def SourceDockerImage            = "nginx"
 def image_version                = "latest"
-def user_image_checksum          = "10b8cc432d56da8b61b070f4c7d2543a9ed17c2b23010b43af434fd40e2ca4aa"
+def user_image_checksum          = "8e10956422503824ebb599f37c26a90fe70541942687f70bbdb744530fc9eba4"
 def userInput = input(
             id: 'userInput', message: 'Enter Artifactory credentials:?',
                 parameters: [
