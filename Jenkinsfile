@@ -225,7 +225,7 @@ pipeline {
                                  i=$(( i+1 ))
                                  echo " "
                                  echo "Requested resources by user"
-                                 cat nginx-app-chart/values.yaml | /home/balaji_bb2021/.local/bin/shyaml get-value resources
+                                 cat nginx-app-chart/values.yaml | .local/bin/shyaml get-value resources
                               done
                                                           
                         }
