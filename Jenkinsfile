@@ -224,10 +224,9 @@ pipeline {
                                  echo "mem_hardlimit:${mem_hardlimit}Mi"
                                  i=$(( i+1 ))
                                  echo " "
-                                 echo "Requested resources by user"
-                                 cat nginx-app-chart/values.yaml | .local/bin/shyaml get-value resources
                               done
-                                                          
+                              echo "Requested resources by user"
+                              cat nginx-app-chart/values.yaml | .local/bin/shyaml get-value resources
                         }
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS"
                       '''  
