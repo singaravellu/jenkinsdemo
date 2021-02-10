@@ -224,6 +224,8 @@ pipeline {
                                  echo "mem_hardlimit:${mem_hardlimit}Mi"
                                  i=$(( i+1 ))
                                  echo " "
+                                 echo "Requested resources"
+                                 cat nginx-app-chart/values.yaml | /home/balaji_bb2021/.local/bin/shyaml get-value resources
                               done
                                                           
                         }
@@ -287,7 +289,7 @@ pipeline {
                         var=`kubectl create namespace $1`
                         if [ $? -eq 1 ]; then
                            echo "$1 namespace already created."
-                           helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
+                           exit 1
                         else
                            kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
                            helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
