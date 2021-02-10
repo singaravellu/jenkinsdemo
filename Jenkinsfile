@@ -10,7 +10,7 @@ def SourceGitRepo                = "https://github.com/AnupKumar-ops/jenkinsdemo
 def VendorName                   = "Cisco"
 def Product                      = "VNF"
 def Version                      = "4.0"
-def upload_filepath              = "http://104.197.48.153:8082/artifactory/${VendorName}/${Product}/${Version}"
+def upload_filepath              = "http://35.202.168.85:8082/artifactory/${VendorName}/${Product}/${Version}"
 def SourceRegistry               = "hub.docker.com"
 def TargetRegistry               = "docker.io/963287/myrepo"
 def TargetRegistryUbuntu         = "963287/myrepo" 
@@ -27,7 +27,7 @@ def userInput = input(
                     password(defaultValue: 'None',
                                             description: 'apitoken of Artifactory',
                                             name: 'password'),
-                    string(defaultValue: 'http://104.197.48.153:8082/artifactory/vendor_repo2',
+                    string(defaultValue: 'http://35.202.168.85:8082/artifactory/vendor_repo2',
                                             description: 'download path of files',
                                             name: 'Source_Repository'),
                     string(defaultValue: 'helloworld.war SampleAebApp.war',
@@ -161,31 +161,73 @@ pipeline {
                 }    
             }
         }
+           
+        stage('get Replicas') {
+                  steps {
+                         script {
+                                def userInput3 = input(
+                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
+                                                          parameters: [
+                                                                 string(defaultValue: '2',
+                                                                               description: 'replica count',
+                                                                               name: 'replicasval'),
+                                                          ]
+                                )
+                                REPLICAS       = "${userInput3}"
+                         }
+                  }
+        }
+           
         stage('Check Resource availablity in K8') {
+               environment {
+                    REPLICAS       = "${REPLICAS}"
+               }       
                steps {
                         // check resource availablity
                                 
                        sh '''
-                       check() {
-                          cpu=0
-                          memory=0
-                          for node in $(kubectl get nodes | grep -v NAME| awk '{print $1}' | awk '(NR>1)')
-                          do      
-                               sum1=$(kubectl describe nodes $node | grep cpu | awk -F " " '{print $2}'| head -1)
-                               sum2=$(kubectl describe nodes $node | grep "memory:" | awk -F " " '{print $2}'| head -1 | awk -F "K" '{print $1}')
-                               cpu=$(expr $sum1 + $cpu)
-                               memory=$(expr $sum2 + $memory)
-                          done
-                          cpu=$(echo | awk -v CPU="$cpu" '{ print CPU*1000 }')
-                          echo "TOTAL CPU : ${cpu}m"
-                          echo "TOTAL MEM : ${memory}Ki"
-                          echo "##########################################################"
-                          echo "Applied Requests and Limits"
-                          kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
-                          -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'
-                         
+                          check() {
+                             echo "Applied Requests and Limits"
+                             kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
+                             -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'
+                             applied_cpu=`kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
+                             -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'| grep cpu | awk -F " " '{print $2}' | awk -F "m" '{print $1}'`
+                             applied_mem=`kubectl get nodes --no-headers | awk '(NR>1)' | awk '{print $1}' | xargs -I {} sh -c 'echo {}; kubectl describe node {} | grep Allocated \
+                             -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo'| grep memory | awk -F " " '{print $2}' | awk -F "Mi" '{print $1}'`
+
+                             echo "########################"
+
+                             cpu=0
+                             memory=0
+                             replicas=$1
+                             i=1
+                             for node in $(kubectl get nodes | grep -v NAME| awk '{print $1}' | awk '(NR>1)')
+                             do      
+                                 sum1=$(kubectl describe nodes $node | grep cpu | awk -F " " '{print $2}'| head -1)
+                                 sum2=$(kubectl describe nodes $node | grep "memory:" | awk -F " " '{print $2}'| head -1 | awk -F "K" '{print $1}')
+                                 cpu=$(expr $sum1 + $cpu)
+                                 memory=$(expr $sum2 + $memory)
+                                 echo "--------------- $node ---------"
+                                 total_allocatable_cpu=$(echo "$sum1*0.93*1000" | bc)
+                                 total_allocatable_mem=$(echo "$sum2*0.75/1024" | bc)
+                                 echo "Total_cpu:${total_allocatable_cpu}m"
+                                 echo "Total_mem:${total_allocatable_mem}Mi"
+                                 a=`echo $applied_cpu | cut --delimiter " " --fields $i`
+                                 b=`echo $applied_mem | cut --delimiter " " --fields $i`
+                                 allocatable_cpu=`echo "$total_allocatable_cpu-$a" | bc`
+                                 allocatable_mem=`echo "$total_allocatable_mem-$b" | bc`
+                                 echo "allocatable_cpu:${allocatable_cpu}m"
+                                 echo "allocatable_mem:${allocatable_mem}Mi"
+                                 cpu_hardlimit=$(echo "$allocatable_cpu/$replicas"| bc)
+                                 mem_hardlimit=$(echo "$allocatable_mem/$replicas"| bc)
+                                 echo "cpu_hardlimit:${cpu_hardlimit}m"
+                                 echo "mem_hardlimit:${mem_hardlimit}Mi"
+                                 i=$(( i+1 ))
+                                 echo " "
+                              done
+                                                          
                         }
-                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check "
+                        ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); check $REPLICAS"
                       '''  
                   }       
          }                                                        
@@ -214,20 +256,12 @@ pipeline {
                                                                                          name: 'k8_namespace'), 
                                                          ]
                                     )
-                              def userInput4 = input(
-                                  id: 'userInput4', message: 'Enter K8s Resource details:?',
-                                                          parameters: [
-                                                                 string(defaultValue: '2',
-                                                                               description: 'replica count',
-                                                                               name: 'replicasval'),
-                                                          ]
-                              )
+                              
                               KUBE_NAMESPACE = "${userInput3.k8_namespace?:''}"
                               LIMITS_CPU     = "${userInput3.cpu_limits?:''}"
                               LIMITS_MEMORY  = "${userInput3.memory_limits?:''}"
                               REQ_CPU        = "${userInput3.cpu_requests?:''}"
                               REQ_MEMORY     = "${userInput3.memory_requests?:''}"
-                              REPLICAS       = "${userInput4}"
                               
                       }
                }
