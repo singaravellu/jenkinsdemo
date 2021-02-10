@@ -166,7 +166,7 @@ pipeline {
                   steps {
                          script {
                                 def userInput3 = input(
-                                  id: 'userInput3', message: 'Enter K8s Resource details:?',
+                                  id: 'userInput3', message: 'Enter replicas:?',
                                                           parameters: [
                                                                  string(defaultValue: '2',
                                                                                description: 'replica count',
@@ -224,7 +224,7 @@ pipeline {
                                  echo "mem_hardlimit:${mem_hardlimit}Mi"
                                  i=$(( i+1 ))
                                  echo " "
-                                 echo "Requested resources"
+                                 echo "Requested resources by user"
                                  cat nginx-app-chart/values.yaml | /home/balaji_bb2021/.local/bin/shyaml get-value resources
                               done
                                                           
@@ -238,7 +238,7 @@ pipeline {
                steps {
                       script {
                               def userInput4 = input(
-                                     id: 'userInput3', message: 'Enter K8s Resource details:?',
+                                     id: 'userInput4', message: 'Enter K8s Resource details:?',
                                                           parameters: [
         
                                                                          string(defaultValue: '1',
@@ -260,14 +260,35 @@ pipeline {
                                                                                          description: 'application name',
                                                                                          name: 'application'),
                                                          ]
-                                    )
-                              
-                              KUBE_NAMESPACE = "${userInput4.k8_namespace?:''}"
-                              LIMITS_CPU     = "${userInput4.cpu_limits?:''}"
-                              LIMITS_MEMORY  = "${userInput4.memory_limits?:''}"
-                              REQ_CPU        = "${userInput4.cpu_requests?:''}"
-                              REQ_MEMORY     = "${userInput4.memory_requests?:''}"
-                              APPLICATION    = "${userInput4.application?:''}"  
+                              )
+                              def userInput5 = input(
+                                     id: 'userInput5', message: 'Enter pod Resource details:?',
+                                                          parameters: [
+        
+                                                                         string(defaultValue: '1',
+                                                                                         description: 'CPU LIMITS',
+                                                                                         name: 'cpu_limits'),                        
+                                                                         string(defaultValue: '1Gi',
+                                                                                         description: 'MEMORY LIMITS',
+                                                                                         name: 'memory_limits'), 
+                                                                         string(defaultValue: '500m',
+                                                                                         description: 'CPU REQUESTS',
+                                                                                         name: 'cpu_requests'),
+                                                                         string(defaultValue: '500Mi',
+                                                                                         description: 'MEMORY REQUESTS',
+                                                                                         name: 'memory_requests'),
+                                                          ]
+                              )
+                              KUBE_NAMESPACE     = "${userInput4.k8_namespace?:''}"
+                              LIMITS_CPU         = "${userInput4.cpu_limits?:''}"
+                              LIMITS_MEMORY      = "${userInput4.memory_limits?:''}"
+                              REQ_CPU            = "${userInput4.cpu_requests?:''}"
+                              REQ_MEMORY         = "${userInput4.memory_requests?:''}"
+                              APPLICATION        = "${userInput4.application?:''}"
+                              POD_LIMITS_CPU     = "${userInput5.cpu_limits?:''}"
+                              POD_LIMITS_MEMORY  = "${userInput5.memory_limits?:''}"
+                              POD_REQ_CPU        = "${userInput5.cpu_requests?:''}"
+                              POD_REQ_MEMORY     = "${userInput5.memory_requests?:''}"
                               
                       }
                }
@@ -275,13 +296,17 @@ pipeline {
          
         stage('deploy to k8') {
              environment {
-                    KUBE_NAMESPACE = "${KUBE_NAMESPACE}"
-                    LIMITS_CPU     = "${LIMITS_CPU}"
-                    LIMITS_MEMORY  = "${LIMITS_MEMORY}"
-                    REQ_CPU        = "${REQ_CPU}"
-                    REQ_MEMORY     = "${REQ_MEMORY}"
-                    REPLICAS       = "${REPLICAS}"
-                    APPLICATION    = "${APPLICATION}"
+                    KUBE_NAMESPACE     = "${KUBE_NAMESPACE}"
+                    LIMITS_CPU         = "${LIMITS_CPU}"
+                    LIMITS_MEMORY      = "${LIMITS_MEMORY}"
+                    REQ_CPU            = "${REQ_CPU}"
+                    REQ_MEMORY         = "${REQ_MEMORY}"
+                    REPLICAS           = "${REPLICAS}"
+                    APPLICATION        = "${APPLICATION}"
+                    POD_LIMITS_CPU     = "${POD_LIMITS_CPU}"
+                    POD_LIMITS_MEMORY  = "${POD_LIMITS_MEMORY}"
+                    POD_REQ_CPU        = "${POD_REQ_CPU}"
+                    POD_REQ_MEMORY     = "${POD_REQ_MEMORY}"
              }       
                steps {      
                      sh '''
@@ -292,13 +317,14 @@ pipeline {
                            exit 1
                         else
                            kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
-                           helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
+                           helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 --set resources.limits.cpu=$10 \
+                           --set resources.limits.memory=$11 --set resources.requests.cpu=$12 --set resources.requests.memory=$13  -n $1
                         fi
                         }
                         rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
                         $KUBE_NAMESPACE $LIMITS_CPU $LIMITS_MEMORY \
-                        $REQ_CPU $REQ_MEMORY $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS $APPLICATION"
+                        $REQ_CPU $REQ_MEMORY $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS $APPLICATION $POD_LIMITS_CPU $POD_LIMITS_MEMORY $POD_REQ_CPU $POD_REQ_MEMORY"
                      '''
             }       
         }                 
