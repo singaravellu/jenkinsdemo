@@ -235,7 +235,7 @@ pipeline {
         stage('get input'){
                steps {
                       script {
-                              def userInput3 = input(
+                              def userInput4 = input(
                                      id: 'userInput3', message: 'Enter K8s Resource details:?',
                                                           parameters: [
         
@@ -254,14 +254,18 @@ pipeline {
                                                                          string(defaultValue: 'app-nginx',
                                                                                          description: 'k8 namespace',
                                                                                          name: 'k8_namespace'), 
+                                                                         string(defaultValue: 'None',
+                                                                                         description: 'application name',
+                                                                                         name: 'application'),
                                                          ]
                                     )
                               
-                              KUBE_NAMESPACE = "${userInput3.k8_namespace?:''}"
-                              LIMITS_CPU     = "${userInput3.cpu_limits?:''}"
-                              LIMITS_MEMORY  = "${userInput3.memory_limits?:''}"
-                              REQ_CPU        = "${userInput3.cpu_requests?:''}"
-                              REQ_MEMORY     = "${userInput3.memory_requests?:''}"
+                              KUBE_NAMESPACE = "${userInput4.k8_namespace?:''}"
+                              LIMITS_CPU     = "${userInput4.cpu_limits?:''}"
+                              LIMITS_MEMORY  = "${userInput4.memory_limits?:''}"
+                              REQ_CPU        = "${userInput4.cpu_requests?:''}"
+                              REQ_MEMORY     = "${userInput4.memory_requests?:''}"
+                              APPLICATION    = "${userInput4.application?:''}"  
                               
                       }
                }
@@ -275,23 +279,26 @@ pipeline {
                     REQ_CPU        = "${REQ_CPU}"
                     REQ_MEMORY     = "${REQ_MEMORY}"
                     REPLICAS       = "${REPLICAS}"
+                    APPLICATION    = "${APPLICATION}"
              }       
                steps {      
                      sh '''
                         getinputs() {
                         var=`kubectl create namespace $1`
                         if [ $? -eq 1 ]; then
-                           echo "$1 namespace already created. Choose other name"
-                           exit 1
-                        else
+                           echo "$1 namespace already created."
                            kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
-                           helm install app1 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
+                           helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
+                        else
+                           
+                           kubectl create quota appquota --hard=limits.cpu=$2,limits.memory=$3,requests.cpu=$4,requests.memory=$5 -n $1
+                           helm install $9 nginx-app-chart --set image.repository=$6 --set image.tag=$7 --set replicaCount=$8 -n $1
                         fi
                         }
                         rsync -av $WORKSPACE/nginx-app-chart jenkins@k8-master:/home/jenkins/
                         ssh -o StrictHostKeyChecking=no jenkins@k8-master "$(typeset -f); getinputs \
                         $KUBE_NAMESPACE $LIMITS_CPU $LIMITS_MEMORY \
-                        $REQ_CPU $REQ_MEMORY $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS"
+                        $REQ_CPU $REQ_MEMORY $TARGET_REGISTRY_UBUNTU $BUILD_NUMBER $REPLICAS $APPLICATION"
                      '''
             }       
         }                 
